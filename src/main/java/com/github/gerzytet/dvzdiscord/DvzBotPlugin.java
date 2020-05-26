@@ -1,16 +1,16 @@
 package com.github.gerzytet.dvzdiscord;
 
+import java.util.logging.Logger;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class DvzBotPlugin extends JavaPlugin {
-
     @Override
     public void onEnable(){
-        //Fired when the server enables the plugin
+    	DvzBot.setLogger(getLogger());
     }
 
     @Override
     public void onDisable(){
-        //Fired when the server stops and disables all plugins
     }
 }
