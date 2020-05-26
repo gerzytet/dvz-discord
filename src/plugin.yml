@@ -1,0 +1,4 @@
+name: dvz-discord
+version: 1.0
+author: gerzytet
+main: com.github.gerzytet.dvzdiscord.DvzBotPlugin
