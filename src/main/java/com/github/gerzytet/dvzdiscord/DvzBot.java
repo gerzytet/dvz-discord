@@ -70,7 +70,7 @@ public class DvzBot {
 	}
 	
 	private void send(String message) {
-		channel.sendMessage(message);
+		channel.sendMessage(message).queue();
 	}
 	
 	/**
