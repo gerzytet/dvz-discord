@@ -1,16 +1,14 @@
 package com.github.gerzytet.dvzdiscord;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
-
 import javax.security.auth.login.LoginException;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
@@ -35,18 +33,22 @@ public class DvzBot {
 	
 	private JDA bot;
 	private MessageChannel channel;
+	private Role pingRole;
 	
 	@SuppressWarnings("unused")
 	private DvzBot() {}
 	
-    /**
-     * Create the bot and log in.
+	/**
+	 * Create the bot and log in.
      * Blocks until the bot is connected
      * 
      * @param token the bot token
-     */
+	 * @param guildID guild id of the bot
+	 * @param channelID channel id to print messages to
+	 * @param pingRoleID The id of the role to ping.
+	 */
 	@SuppressWarnings("deprecation")
-	public DvzBot(String token, long guild_id, long channel_id) {
+	public DvzBot(String token, long guildID, long channelID, long pingRoleID) {
 		try {
 			//the docs say this constructor is deprecated
 			//but the examples all use this
@@ -57,7 +59,11 @@ public class DvzBot {
 					.addEventListeners(new ReadyListener())
 					.build();
 			bot.awaitReady();
-			channel = bot.getGuildById(guild_id).getTextChannelById(channel_id);
+			
+			Guild guild = bot.getGuildById(guildID);
+			channel = guild.getTextChannelById(channelID);
+			pingRole = guild.getRoleById(pingRoleID);
+			
 		} catch (LoginException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -99,6 +105,14 @@ public class DvzBot {
 		channel.sendMessage(message).queue();
 	}
 	
+	private void sendWithPing(String message) {
+		if (pingRole == null) {
+			send(message);
+		} else {
+			send(message + " " + pingRole.getAsMention());
+		}
+	}
+	
 	/**
 	 * Announce game start
 	 * 
@@ -122,12 +136,18 @@ public class DvzBot {
 	 * @param dwarves number of dwarves online
 	 * @param secondsUntilNight seconds until monsters are released
 	 * @param totalDaytimeSeconds the total seconds that daytime lasts
+	 * @param ping true if the bot should ping the ping role for this message
 	 */
-	public void daytimeStatus(int dwarves, int secondsUntilNight, int totalDaytimeSeconds) {
+	public void daytimeStatus(int dwarves, int secondsUntilNight, int totalDaytimeSeconds, boolean ping) {
 		int minutes = secondsUntilNight / 60;
 		int seconds = secondsUntilNight % 60;
-		send(clockFromDouble(1 - ((double) secondsUntilNight / totalDaytimeSeconds)) + " " + 
-		     dwarves + " dwarves online.  " + formatMinutesSeconds(minutes, seconds) + " until the monsters are released.");
+		String message = clockFromDouble(1 - ((double) secondsUntilNight / totalDaytimeSeconds)) + " " + 
+			     dwarves + " dwarves online.  " + formatMinutesSeconds(minutes, seconds) + " until the monsters are released.";
+		if (ping) {
+			sendWithPing(message);
+		} else {
+			send(message);
+		}
 	}
 	
 	/**
@@ -143,14 +163,20 @@ public class DvzBot {
 	 * @param dwarves number of dwarves
 	 * @param monsters number of monsters
 	 * @param assassins number of assassins
-	 * @param secondsUntilDwarvesWin
-	 * @param totalNighttimeSeconds total number of seconds 
+	 * @param secondsUntilDwarvesWin seconds until dwarves win
+	 * @param totalNighttimeSeconds total number of seconds
+	 * @param ping true if the bot should ping the ping role for this message
 	 */
-	public void nighttimeStatus(int dwarves, int monsters, int assassins, int secondsUntilDwarvesWin, int totalNighttimeSeconds) {
+	public void nighttimeStatus(int dwarves, int monsters, int assassins, int secondsUntilDwarvesWin, int totalNighttimeSeconds, boolean ping) {
 		int minutes = secondsUntilDwarvesWin / 60;
 		int seconds = secondsUntilDwarvesWin % 60;
-		send(clockFromDouble(1 - ((double) secondsUntilDwarvesWin / totalNighttimeSeconds)) + " " +
-	         formatPlayers(dwarves, monsters, assassins) + " online.  " + formatMinutesSeconds(minutes, seconds) + " until dwarves win.");
+		String message = clockFromDouble(1 - ((double) secondsUntilDwarvesWin / totalNighttimeSeconds)) + " " +
+		         formatPlayers(dwarves, monsters, assassins) + " online.  " + formatMinutesSeconds(minutes, seconds) + " until dwarves win.";
+		if (ping) {
+			sendWithPing(message);
+		} else {
+			send(message);
+		}
 	}
 	
 	/**
@@ -171,19 +197,19 @@ public class DvzBot {
 	/**
 	 * Announce game end
 	 * 
-	 * @param reason
+	 * @param reason reason for game end
 	 */
 	public void endGame(EndReason reason) {
 		String msg = "";
 		switch (reason) {
 		case MONSTERS_WON:
-			msg = TROPHY + "the monsters won!";
+			msg = TROPHY + " The monsters won!";
 			break;
 		case DWARVES_WON:
-			msg = TROPHY + " the dwarves won!";
+			msg = TROPHY + " The dwarves won!";
 			break;
 		case SERVER_RESET:
-			msg = STOP + " the server stopped.";
+			msg = STOP + " The server stopped.";
 			break;
 		default:
 			break;
