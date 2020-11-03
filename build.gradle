@@ -26,6 +26,6 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.15.2-R0.1-SNAPSHOT'
-    compile 'net.dv8tion:JDA:4.1.1_155'
+    compile 'net.dv8tion:JDA:4.2.0_168'
     testImplementation 'junit:junit:4.12'
 }

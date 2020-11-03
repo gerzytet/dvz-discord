@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class DvzBot {
 	static Logger logger;
@@ -53,7 +54,7 @@ public class DvzBot {
 			//the docs say this constructor is deprecated
 			//but the examples all use this
 			//I don't know what else to do
-			bot = new JDABuilder(token)
+			bot = JDABuilder.create(token, GatewayIntent.GUILD_MESSAGES)
 					.setActivity(Activity.playing("DvZ at pvp.lihp.us"))
 					.setAutoReconnect(true)
 					.addEventListeners(new ReadyListener())
