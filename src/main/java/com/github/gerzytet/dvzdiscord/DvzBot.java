@@ -51,9 +51,6 @@ public class DvzBot {
 	@SuppressWarnings("deprecation")
 	public DvzBot(String token, long guildID, long channelID, long pingRoleID) {
 		try {
-			//the docs say this constructor is deprecated
-			//but the examples all use this
-			//I don't know what else to do
 			bot = JDABuilder.create(token, GatewayIntent.GUILD_MESSAGES)
 					.setActivity(Activity.playing("DvZ at pvp.lihp.us"))
 					.setAutoReconnect(true)
@@ -102,11 +99,11 @@ public class DvzBot {
 	private static String MOON = ":crescent_moon:";
 	private static String STOP = ":octagonal_sign:";
 	
-	private void send(String message) {
+	public void send(String message) {
 		channel.sendMessage(message).queue();
 	}
 	
-	private void sendWithPing(String message) {
+	public void sendWithPing(String message) {
 		if (pingRole == null) {
 			send(message);
 		} else {
